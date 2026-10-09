@@ -1,8 +1,31 @@
-# 🌍 External GeoGuessr Resolver (Steam + Browser + Android Flutter App)
+# 🌍 External GeoGuessr Resolver (Steam + Browser + Android Flutter App + Web Dashboard)
 
-A complete system that allows you to **play GeoGuessr on your PC** (either the **Steam Edition** or in a **Web Browser**) while viewing the exact location of the current round in real time on your **Android phone inside a standalone Flutter app** (interactive map with pin, country, state/region, county, city, road, postcode, and exact coordinates).
+A complete system that allows you to **play GeoGuessr on your PC** (either the **Steam Edition** or in a **Web Browser**) while viewing the exact location of the current round in real time on your **Android phone inside a standalone Flutter app** (or in the upgraded **Next.js Web Dashboard**).
 
 Nothing is displayed on your PC screen during gameplay, keeping your monitor and Discord screen shares completely clean.
+
+---
+
+## ✨ Key Features (Android App & Web Dashboard)
+
+Both the **Flutter Android App (`flutter_app/`)** and the **Web Dashboard (`frontend/`)** share the same redesigned interface and controls:
+
+* **Instant Hero Location Banner:** Displays the **Country** in large bold neon text at the very top of the screen, along with **City • State/Region**, **Road**, and a 1-tap **Copy Coordinates** button.
+* **4 Map Layer Styles (1-Tap Switcher):**
+  * **Clean HD** (Carto Voyager @2x) — high-contrast, modern map with crisp road and city labels.
+  * **Streets** (OpenStreetMap) — full street and local POI details.
+  * **Satellite** (Esri World Imagery) — aerial/satellite imagery.
+  * **Dark** (Carto Dark Matter) — dark-themed map matching the neon UI.
+* **1-Tap Quick Zoom Presets:** Jump immediately between zoom levels without pinching repeatedly:
+  * 🌍 **World (`z3`)** — continent / global overview.
+  * 🏳️ **Country (`z6`)** — country-level overview.
+  * 🏙️ **Region (`z11`)** — city and regional highways.
+  * 🎯 **5K Pin (`z16`)** — street-level intersection view for 5,000-point pinpointing.
+* **Precision Bullseye Target Marker:** A translucent target ring with an exact center dot and a floating `City, Country` chip above it, so the pin never obscures the road intersection underneath.
+* **Fullscreen Map Mode (`Expand`):** Expand the map to fill the entire screen with a floating summary bar on top and quick-zoom controls at the bottom.
+* **North-Up Rotation Lock (Android):** Two-finger pinch-to-zoom never accidentally twists the map upside down.
+* **Tap-to-Copy Details:** Tap any tile in the **Location Details** grid (Country, State, County, City, Area, Road, Postcode, Place) to copy it to your clipboard.
+* **Pre-Configured Default User ID:** Comes pre-filled with `11111111-1111-4111-8111-111111111111` across the Android app, Web Dashboard, Steam Resolver, and Browser Userscript so you can connect with a single tap.
 
 ---
 
@@ -10,12 +33,12 @@ Nothing is displayed on your PC screen during gameplay, keeping your monitor and
 
 | Folder / File | Description |
 | :--- | :--- |
-| **[`flutter_app/`](flutter_app/)** | **Android Flutter Application** — displays a real-time interactive map (`flutter_map` + OpenStreetMap) and reverse-geocoded location details without opening a browser. |
-| **[`Steam_Resolver/`](Steam_Resolver/)** | **GeoGuessr Steam Edition Resolver** — intercepts Street View coordinates directly from the Steam desktop game on Windows and streams them to the Android app. |
+| **[`flutter_app/`](flutter_app/)** | **Android Flutter Application** — standalone native mobile app with an interactive map (`flutter_map`), quick-zoom presets, layer switcher, fullscreen mode, and reverse-geocoded details. |
+| **[`Steam_Resolver/`](Steam_Resolver/)** | **GeoGuessr Steam Edition Resolver** — intercepts Street View coordinates directly from the Steam desktop game on Windows and streams them to the Android app / Web Dashboard. |
 | **[`Extension/Extension.js`](Extension/Extension.js)** | **Tampermonkey Userscript (Browser Version)** — hooks into Google Maps requests on `geoguessr.com` in Chrome, Edge, Brave, Opera, or Firefox. |
+| **[`frontend/`](frontend/)** | **Next.js Web Dashboard** — web version featuring the same interactive Leaflet map, quick-zoom presets, map layers, fullscreen mode, and live location details. |
 | **[`Server/server.py`](Server/server.py)** | **FastAPI WebSocket Server** — optional self-hosted server if you want everything to run over your local Wi-Fi network without relying on an external server. |
 | **[`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml)** | **GitHub Actions Workflow** — automatically compiles the Flutter app into a ready-to-install Android `.apk` artifact on GitHub. |
-| **[`frontend/`](frontend/)** | Original Next.js web dashboard (optional, replaced by the Flutter mobile app). |
 
 ---
 
@@ -58,9 +81,8 @@ flutter build apk --release
    ```text
    11111111-1111-4111-8111-111111111111
    ```
-   *(If you are using an older APK build where the field is empty, paste that UUID once — the app saves it permanently).*
 3. Tap the green **Connect** button.
-4. The app will show **"Waiting for game info"** until a round starts on your PC. As soon as a round loads, the map automatically centers on the exact pin and displays all location details (country, state, city, road, postcode).
+4. The app will show **"Waiting for game info"** until a round starts on your PC. As soon as a round loads, the map automatically centers on the exact pin and displays all location details.
 
 ---
 
@@ -91,12 +113,7 @@ Because GeoGuessr Steam Edition runs as a standalone desktop application rather 
    ```
 3. Leave that window open in the background and launch **GeoGuessr on Steam**.
 4. Tap **Connect** in the Android app on your phone.
-5. As soon as you enter a round (Solo, Duels, Party, etc.), the console will log:
-   ```text
-   [+] Location found (StreetView RPC): 50.450175, 30.524103 -> Sending to phone...
-   [OK] Sent to Android app! (50.450175, 30.524103)
-   ```
-   And your Android phone will immediately pan the map to the exact coordinates and display the address details!
+5. As soon as you enter a round (Solo, Duels, Party, etc.), the console will log the detected coordinates and stream them immediately to your phone!
 
 ### Step 3: Stopping After Playing
 * Simply close the console window (`X` or `Ctrl + C`) when you finish playing.
@@ -125,10 +142,21 @@ If you play GeoGuessr in a web browser at `https://www.geoguessr.com`, you don't
 
 ---
 
-## 🖥️ PART 4: Optional — Running Your Own Local Server (`Server/server.py`)
+## 💻 PART 4: Optional — Running the Web Dashboard (`frontend/`) or Local Server (`Server/`)
 
-By default, the Steam script, Browser userscript, and Android app communicate through the public server (`georesolver.0x978.com`).
-If the public server is ever offline or you prefer to run everything 100% locally over your home Wi-Fi (PC and Android on the same network):
+### Running the Next.js Web Dashboard (`frontend/`)
+If you also want to use the upgraded Web Dashboard in a browser:
+
+```bash
+cd frontend
+npm install
+npm run dev -- --hostname 0.0.0.0
+```
+Then open `http://localhost:3000` (or `http://<YOUR_PC_IP>:3000` from another device on the same Wi-Fi).
+
+### Running Your Own Local WebSocket Server (`Server/server.py`)
+By default, the Steam script, Browser userscript, Android app, and Web Dashboard communicate through the public server (`georesolver.0x978.com`).
+If the public server is ever offline or you prefer to run everything 100% locally over your home Wi-Fi:
 
 1. **Start the local server on your PC:**
    ```bash
@@ -142,8 +170,8 @@ If the public server is ever offline or you prefer to run everything 100% locall
    - Open Command Prompt (`cmd`) and run `ipconfig`.
    - Look for **IPv4 Address** (e.g., `192.168.1.15`).
 
-3. **Connect the Android app to your PC:**
-   - On the Android app's home screen, tap **"Configure custom / local server (optional)"**.
+3. **Connect the Android app (or Web Dashboard) to your PC:**
+   - On the Connect screen, tap **"Configure custom / local server (optional)"**.
    - Enter your PC's local IP and port, e.g.:
      ```text
      192.168.1.15:8000
