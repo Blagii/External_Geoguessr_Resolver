@@ -1,5 +1,5 @@
 name: georesolver_mobile
-description: GeoGuessr Live Viewer - Flutter Android aplikacija za External_Geoguessr_Resolver.
+description: GeoGuessr Live Viewer - Flutter Android App for External_Geoguessr_Resolver.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -19,6 +19,17 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0A0A0A"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon/app_icon.png

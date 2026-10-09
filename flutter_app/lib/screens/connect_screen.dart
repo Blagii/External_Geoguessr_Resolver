@@ -168,19 +168,27 @@ class _ConnectScreenState extends State<ConnectScreen> {
                     child: Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(14),
+                          width: 76,
+                          height: 76,
                           decoration: BoxDecoration(
-                            color: neonGreen.withAlpha(22),
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                              color: neonGreen.withAlpha(80),
+                              color: neonGreen.withAlpha(110),
                               width: 1.5,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: neonGreen.withAlpha(45),
+                                blurRadius: 16,
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.public,
-                            size: 42,
-                            color: neonGreen,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16.5),
+                            child: Image.asset(
+                              'assets/icon/app_icon.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 14),

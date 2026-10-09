@@ -36,6 +36,7 @@ jobs:
           path = "android/app/src/main/AndroidManifest.xml"
           with open(path, "r") as f:
               content = f.read()
+          content = content.replace("android:label=\"georesolver_mobile\"", "android:label=\"GeoResolver\"")
           if "android.permission.INTERNET" not in content:
               content = content.replace("<application", "<uses-permission android:name=\"android.permission.INTERNET\"/>\n    <application", 1)
           if "usesCleartextTraffic" not in content:
@@ -47,6 +48,10 @@ jobs:
       - name: Install Flutter dependencies
         working-directory: flutter_app
         run: flutter pub get
+
+      - name: Generate Custom Android Launcher Icons
+        working-directory: flutter_app
+        run: dart run flutter_launcher_icons
 
       - name: Build Release APK
         working-directory: flutter_app
