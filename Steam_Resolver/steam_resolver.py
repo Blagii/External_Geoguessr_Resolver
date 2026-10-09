@@ -1,11 +1,17 @@
 import json
 import re
+import threading
 import time
 import urllib.request
 from mitmproxy import http
 
 USER_ID = "11111111-1111-4111-8111-111111111111"
 SERVER_URL = "https://georesolver.0x978.com/coords"
+LOCAL_SERVER_URL = "http://127.0.0.1:8000/coords"
+
+# Bitno: Direktna konekcija koja zaobilazi Windows sistemski proxy (127.0.0.1:8080)
+# kako skripta ne bi slala zahtev samoj sebi i pravila timeout!
+DIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 # Regex patterns for Google Street View & GeoGuessr responses
 PROTO_COORD_RE = re.compile(r"\[null,null,(-?\d+\.\d+),(-?\d+\.\d+)\]")
@@ -26,23 +32,7 @@ def _is_valid_coord(lat: float, lng: float) -> bool:
     return True
 
 
-def _send_coords(lat: float, lng: float, source: str) -> None:
-    global _last_sent, _last_sent_time
-    now = time.time()
-    # Avoid sending duplicate coordinates within 2 seconds
-    if (
-        _last_sent[0] is not None
-        and abs(lat - _last_sent[0]) < 1e-5
-        and abs(lng - _last_sent[1]) < 1e-5
-        and (now - _last_sent_time) < 2.0
-    ):
-        return
-
-    _last_sent = (lat, lng)
-    _last_sent_time = now
-
-    print(f"[+] Lokacija pronadjena ({source}): {lat:.6f}, {lng:.6f} -> Slanje na telefon...")
-
+def _post_coords_worker(lat: float, lng: float) -> None:
     payload = json.dumps(
         {
             "lat": lat,
@@ -51,26 +41,64 @@ def _send_coords(lat: float, lng: float, source: str) -> None:
         }
     ).encode("utf-8")
 
+    # 1. Posalji na lokalni server na kompjuteru (ako je ukljucen)
+    try:
+        local_req = urllib.request.Request(
+            LOCAL_SERVER_URL,
+            data=payload,
+            headers={"Content-Type": "application/json; charset=UTF-8"},
+            method="POST",
+        )
+        with DIRECT_OPENER.open(local_req, timeout=2) as _:
+            pass
+    except Exception:
+        pass
+
+    # 2. Posalji na javni georesolver server
     req = urllib.request.Request(
         SERVER_URL,
         data=payload,
         headers={
             "Content-Type": "application/json; charset=UTF-8",
-            "User-Agent": "GeoResolverSteam/1.0",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         },
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=5) as _:
-            print("[OK] Poslato na Android aplikaciju!")
+        with DIRECT_OPENER.open(req, timeout=8) as _:
+            print(f"[OK] Poslato na Android aplikaciju! ({lat:.6f}, {lng:.6f})")
     except Exception as e:
-        print(f"[!] Greska pri slanju na server: {e}")
+        print(f"[!] Javni server nedostupan ({e}) - koristi lokalni IP u aplikaciji.")
+
+
+def _send_coords(lat: float, lng: float, source: str) -> None:
+    global _last_sent, _last_sent_time
+    now = time.time()
+    # Izbegni duplikate za istu lokaciju u roku od 3 sekunde
+    if (
+        _last_sent[0] is not None
+        and abs(lat - _last_sent[0]) < 1e-4
+        and abs(lng - _last_sent[1]) < 1e-4
+        and (now - _last_sent_time) < 3.0
+    ):
+        return
+
+    _last_sent = (lat, lng)
+    _last_sent_time = now
+
+    print(
+        f"[+] Lokacija pronadjena ({source}): {lat:.6f}, {lng:.6f} -> Slanje na telefon..."
+    )
+
+    # Saljemo u pozadinskom thread-u da nikad ne blokira mitmproxy ni igru
+    threading.Thread(
+        target=_post_coords_worker, args=(lat, lng), daemon=True
+    ).start()
 
 
 def response(flow: http.HTTPFlow) -> None:
     url = flow.request.pretty_url
 
-    # Do not intercept our own outbound requests to georesolver
     if "georesolver.0x978.com" in url:
         return
 
@@ -85,7 +113,6 @@ def response(flow: http.HTTPFlow) -> None:
         if not text:
             return
 
-        # Try [null,null,lat,lng] first (most accurate for Google Maps RPC)
         m = PROTO_COORD_RE.search(text)
         if m:
             lat, lng = float(m.group(1)), float(m.group(2))
@@ -93,7 +120,6 @@ def response(flow: http.HTTPFlow) -> None:
                 _send_coords(lat, lng, "StreetView RPC")
                 return
 
-        # Fallback to general lat,lng pair
         m2 = PAIR_COORD_RE.search(text)
         if m2:
             lat, lng = float(m2.group(1)), float(m2.group(2))
@@ -113,7 +139,6 @@ def response(flow: http.HTTPFlow) -> None:
         if not text:
             return
 
-        # Try structured JSON parsing for "rounds" array (latest round is last item)
         try:
             data = json.loads(text)
             if isinstance(data, dict):
@@ -136,7 +161,6 @@ def response(flow: http.HTTPFlow) -> None:
         except Exception:
             pass
 
-        # Regex fallback for "lat": ..., "lng": ... in GeoGuessr API response
         matches = JSON_LAT_LNG_RE.findall(text)
         if matches:
             lat_str, lng_str = matches[-1]
