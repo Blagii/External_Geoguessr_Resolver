@@ -16,7 +16,7 @@ class ConnectScreen extends StatefulWidget {
 class _ConnectScreenState extends State<ConnectScreen> {
   static const Color neonGreen = Color(0xFF56FF0A);
   static const Color bgDark = Color(0xFF0A0A0A);
-  static const Color cardDark = Color(0xFF171717);
+  static const Color cardDark = Color(0xFF141414);
   static const Color borderDark = Color(0xFF262626);
 
   static const String defaultUserId = '11111111-1111-4111-8111-111111111111';
@@ -75,14 +75,14 @@ class _ConnectScreenState extends State<ConnectScreen> {
     final token = _tokenController.text.trim();
     if (token.isEmpty) {
       setState(() {
-        _errorText = 'Unesite vaš User ID Token.';
+        _errorText = 'Please enter your User ID Token.';
       });
       return;
     }
 
     if (!_uuidRegex.hasMatch(token)) {
       setState(() {
-        _errorText = 'Neispravan format User ID-a (mora biti UUID).';
+        _errorText = 'Invalid User ID format (must be a valid UUID).';
       });
       return;
     }
@@ -121,7 +121,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
     } else {
       setState(() {
         _errorText =
-            widget.wsService.error ?? 'Neuspešno povezivanje na WebSocket.';
+            widget.wsService.error ?? 'Failed to connect to WebSocket.';
       });
     }
   }
@@ -155,7 +155,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: cardDark,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: borderDark),
                       boxShadow: [
                         BoxShadow(
@@ -167,17 +167,28 @@ class _ConnectScreenState extends State<ConnectScreen> {
                     ),
                     child: Column(
                       children: [
-                        const Icon(
-                          Icons.public,
-                          size: 52,
-                          color: neonGreen,
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: neonGreen.withAlpha(22),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: neonGreen.withAlpha(80),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.public,
+                            size: 42,
+                            color: neonGreen,
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Text(
                           'GeoGuessr Live Viewer',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 26,
+                            fontSize: 25,
                             fontWeight: FontWeight.w800,
                             color: neonGreen,
                             shadows: [
@@ -190,7 +201,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'Android Resolver App',
+                          'Real-Time Location & Interactive Map',
                           style: TextStyle(
                             color: Colors.white54,
                             fontSize: 13,
@@ -202,48 +213,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Instructions note
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text.rich(
-                      TextSpan(
-                        style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
-                        children: [
-                          TextSpan(
-                            text: 'Savet: ',
-                            style: TextStyle(
-                              color: neonGreen,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text:
-                                'Na kompjuteru dok ste na geoguessr.com pritisnite ',
-                          ),
-                          TextSpan(
-                            text: 'F9',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' da vidite svoj User ID. Aplikacija ga pamti nakon prvog unosa.',
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
                   // Connect Card
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: cardDark,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: borderDark),
                     ),
                     child: Column(
@@ -271,13 +246,34 @@ class _ConnectScreenState extends State<ConnectScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          'User ID Token',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'User ID Token',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _tokenController.text = defaultUserId;
+                                  _errorText = null;
+                                });
+                              },
+                              child: const Text(
+                                'Use Default ID',
+                                style: TextStyle(
+                                  color: neonGreen,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         TextField(
@@ -286,32 +282,32 @@ class _ConnectScreenState extends State<ConnectScreen> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontFamily: 'monospace',
-                            fontSize: 14,
+                            fontSize: 13.5,
                           ),
                           onSubmitted: (_) => _handleConnect(),
                           decoration: InputDecoration(
                             hintText: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
                             hintStyle: const TextStyle(color: Colors.white30),
                             filled: true,
-                            fillColor: const Color(0xFF222222),
+                            fillColor: const Color(0xFF1F1F1F),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 14,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(color: borderDark),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(color: borderDark),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(color: neonGreen),
                             ),
                             suffixIcon: IconButton(
-                              tooltip: 'Nalepi iz clipboard-a',
+                              tooltip: 'Paste from clipboard',
                               icon: const Icon(
                                 Icons.content_paste,
                                 color: Colors.white60,
@@ -346,8 +342,8 @@ class _ConnectScreenState extends State<ConnectScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   _showCustomServer
-                                      ? 'Sakrij podešavanje servera'
-                                      : 'Podesi sopstveni / lokalni server (opciono)',
+                                      ? 'Hide server settings'
+                                      : 'Configure custom / local server (optional)',
                                   style: const TextStyle(
                                     color: Colors.white54,
                                     fontSize: 12.5,
@@ -369,25 +365,25 @@ class _ConnectScreenState extends State<ConnectScreen> {
                               fontSize: 13,
                             ),
                             decoration: InputDecoration(
-                              labelText: 'WebSocket Server ili IP kompjutera',
+                              labelText: 'WebSocket Server or Local PC IP',
                               labelStyle: const TextStyle(
                                 color: Colors.white54,
                                 fontSize: 12,
                               ),
-                              hintText: 'npr. 192.168.1.15:8000 ili wss://...',
+                              hintText: 'e.g. 192.168.1.15:8000 or wss://...',
                               hintStyle: const TextStyle(color: Colors.white30),
                               filled: true,
-                              fillColor: const Color(0xFF222222),
+                              fillColor: const Color(0xFF1F1F1F),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                                 vertical: 12,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: borderDark),
                               ),
                               suffixIcon: IconButton(
-                                tooltip: 'Vrati na podrazumevani server',
+                                tooltip: 'Reset to default server',
                                 icon: const Icon(
                                   Icons.restore,
                                   color: Colors.white54,
@@ -410,7 +406,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: Colors.red.withAlpha(30),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: Colors.redAccent.withAlpha(102),
                               ),
@@ -440,20 +436,19 @@ class _ConnectScreenState extends State<ConnectScreen> {
                         const SizedBox(height: 18),
 
                         SizedBox(
-                          height: 48,
+                          height: 50,
                           child: ElevatedButton(
                             onPressed: _isConnecting ? null : _handleConnect,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: neonGreen,
                               foregroundColor: Colors.black,
-                              disabledBackgroundColor:
-                                  neonGreen.withAlpha(102),
+                              disabledBackgroundColor: neonGreen.withAlpha(102),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               textStyle: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             child: _isConnecting

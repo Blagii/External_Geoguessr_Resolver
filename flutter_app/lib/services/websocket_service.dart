@@ -117,7 +117,7 @@ class WebSocketService extends ChangeNotifier {
       debugPrint('Failed to connect WebSocket: $e');
       _isConnected = false;
       _isConnecting = false;
-      _error = 'Neuspešno povezivanje na server ($_serverUrl).';
+      _error = 'Failed to connect to server ($_serverUrl).';
       notifyListeners();
       if (_isReconnecting) {
         _attemptReconnect();
@@ -146,7 +146,7 @@ class WebSocketService extends ChangeNotifier {
   void _attemptReconnect() {
     if (_reconnectAttempts >= _maxReconnectAttempts) {
       _isReconnecting = false;
-      _error = 'Veza je prekinuta. Pokušajte ponovo da se povežete.';
+      _error = 'Connection lost. Please reconnect.';
       notifyListeners();
       return;
     }
