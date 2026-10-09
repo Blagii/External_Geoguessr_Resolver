@@ -19,7 +19,11 @@ class _ConnectScreenState extends State<ConnectScreen> {
   static const Color cardDark = Color(0xFF171717);
   static const Color borderDark = Color(0xFF262626);
 
-  final TextEditingController _tokenController = TextEditingController();
+  static const String defaultUserId = '11111111-1111-4111-8111-111111111111';
+
+  final TextEditingController _tokenController = TextEditingController(
+    text: defaultUserId,
+  );
   final TextEditingController _serverController = TextEditingController(
     text: WebSocketService.defaultServerUrl,
   );

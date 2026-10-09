@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Geoguessr Location Resolver EXTERNAL
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Receive geoguessr location to any device.
 // @author       0x978
 // @match        https://www.geoguessr.com/*
@@ -19,31 +19,12 @@
 (function () {
     'use strict';
 
+    // Fiksni ID koji je već unapred upisan i u tvojoj Android aplikaciji!
+    // Ne moraš da pritiskaš F9 niti da kucaš kod na telefonu.
+    const DEFAULT_USER_ID = "11111111-1111-4111-8111-111111111111";
     const SERVER_URL = "https://georesolver.0x978.com/coords";
 
-    // ====================================User ID handling====================================
-    function generateGuid() {
-        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-            (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
-        );
-    }
-
-    let userId = null;
-    try {
-        userId = typeof GM_getValue === "function" ? GM_getValue("sessionId") : localStorage.getItem("georesolver_sessionId");
-    } catch (e) {
-        userId = localStorage.getItem("georesolver_sessionId");
-    }
-
-    if (!userId) {
-        userId = generateGuid();
-        try {
-            if (typeof GM_setValue === "function") GM_setValue("sessionId", userId);
-        } catch (e) {}
-        try {
-            localStorage.setItem("georesolver_sessionId", userId);
-        } catch (e) {}
-    }
+    let userId = DEFAULT_USER_ID;
 
     // ====================================Send To Server====================================
     function sendCoords(lat, lng) {
@@ -101,58 +82,12 @@
         hookXHR(unsafeWindow);
     }
 
-    // ====================================UI & F9 Shortcut====================================
-    function showUserIdModal() {
-        prompt("Tvoj GeoResolver User ID (kopiraj ga u Android aplikaciju):", userId);
-    }
-
+    // Opciono: Ako pritisneš F9, prikazaće koji je aktivni ID
     window.addEventListener("keydown", function (e) {
         if (e.key === "F9" || e.code === "F9" || e.keyCode === 120) {
             e.preventDefault();
             e.stopPropagation();
-            showUserIdModal();
+            prompt("Tvoj GeoResolver User ID:", userId);
         }
     }, true);
-
-    function createStatusBadge() {
-        if (document.getElementById("georesolver-badge")) return;
-        const badge = document.createElement("div");
-        badge.id = "georesolver-badge";
-        badge.style.cssText = [
-            "position:fixed",
-            "bottom:12px",
-            "left:12px",
-            "z-index:999999",
-            "background:#111",
-            "color:#56FF0A",
-            "border:1px solid #56FF0A",
-            "border-radius:8px",
-            "padding:8px 12px",
-            "font-family:monospace",
-            "font-size:12px",
-            "cursor:pointer",
-            "box-shadow:0 2px 10px rgba(0,0,0,0.6)"
-        ].join(";");
-        badge.title = "Klikni da vidiš i kopiraš svoj User ID (ili pritisni F9)";
-        badge.textContent = "GeoResolver ID: " + userId + " (Klikni za kopiranje)";
-        badge.addEventListener("click", function () {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(userId).then(function () {
-                    badge.textContent = "Kopirano! ID: " + userId;
-                    setTimeout(function () {
-                        badge.textContent = "GeoResolver ID: " + userId;
-                    }, 2000);
-                }).catch(showUserIdModal);
-            } else {
-                showUserIdModal();
-            }
-        });
-        document.body.appendChild(badge);
-    }
-
-    if (document.readyState === "loading") {
-        window.addEventListener("DOMContentLoaded", createStatusBadge);
-    } else {
-        createStatusBadge();
-    }
 })();
