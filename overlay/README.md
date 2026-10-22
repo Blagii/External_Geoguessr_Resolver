@@ -101,6 +101,9 @@ npm install                  # deps (Electron + Leaflet)
 # Unit tests — URL parsing, flag emoji, round detection, DOM wiring
 node test/renderer.test.js
 
+# Tray icon tests — validates assets/tray-icon.png is a real PNG
+node test/tray.test.js
+
 # Map tests — Leaflet loads locally and builds a real map (needs jsdom)
 npm install --no-save jsdom && node test/map.test.js
 

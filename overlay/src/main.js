@@ -6,6 +6,7 @@
 
 const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require("electron")
 const path = require("node:path")
+const fs = require("node:fs")
 
 const MARGIN = 16
 const DEFAULTS = {
@@ -19,6 +20,7 @@ const DEFAULTS = {
 }
 
 let overlay = null
+let trayInstance = null
 let clickThrough = false
 let store = { ...DEFAULTS }
 
@@ -28,7 +30,6 @@ const storePath = path.join(app.getPath("userData"), "overlay-settings.json")
 
 function loadStore() {
   try {
-    const fs = require("node:fs")
     if (fs.existsSync(storePath)) {
       store = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(storePath, "utf8")) }
     }
@@ -39,7 +40,6 @@ function loadStore() {
 
 function saveStore() {
   try {
-    const fs = require("node:fs")
     fs.mkdirSync(path.dirname(storePath), { recursive: true })
     fs.writeFileSync(storePath, JSON.stringify(store, null, 2), "utf8")
   } catch (err) {
@@ -166,22 +166,39 @@ function createOverlay() {
 /* ── Tray icon ────────────────────────────────────────────────── */
 
 function createTray() {
-  let Tray, Menu
+  let Tray, Menu, nativeImage
   try {
-    ;({ Tray, Menu } = require("electron"))
+    ;({ Tray, Menu, nativeImage } = require("electron"))
   } catch {
     return
   }
 
-  const icon = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-       <circle cx="16" cy="16" r="14" fill="#56ff0a"/>
-       <circle cx="16" cy="16" r="6" fill="#0a0b0c"/>
-     </svg>`
-  )
+  // Tray needs a real image (NativeImage or file path) — SVG text in a
+  // Buffer is rejected with "Argument must be a file path or a NativeImage".
+  const iconPath = path.join(__dirname, "..", "assets", "tray-icon.png")
+  let icon
+  try {
+    if (fs.existsSync(iconPath)) {
+      icon = nativeImage.createFromPath(iconPath)
+    }
+    if (!icon || icon.isEmpty()) {
+      // Fall back to an empty image so the tray still works without the asset.
+      icon = nativeImage.createEmpty()
+    }
+  } catch {
+    return
+  }
 
-  const tray = new Tray(icon)
-  tray.setToolTip("GeoGuessr Overlay")
+  let tray
+  try {
+    tray = new Tray(icon)
+    tray.setToolTip("GeoGuessr Overlay")
+  } catch (err) {
+    // The tray is a convenience; the overlay itself must still run.
+    console.error("[overlay] tray unavailable:", err.message)
+    return
+  }
+  trayInstance = tray
 
   const toggleClickThrough = () => setClickThrough(!clickThrough)
 
@@ -294,8 +311,11 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on("window-all-closed", (event) => {
-  // Keep running in the tray so the overlay can be re-shown via hotkey.
-  event?.preventDefault?.()
+  // Keep running only when the tray is available — that's what provides
+  // "show again" and "quit". Without it, closing the overlay should exit.
+  if (trayInstance) {
+    event?.preventDefault?.()
+  }
 })
 
 app.on("before-quit", () => {
