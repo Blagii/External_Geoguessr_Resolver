@@ -1,8 +1,8 @@
-# 🌍 External GeoGuessr Resolver (Steam + Browser + Android Flutter App + Web Dashboard)
+# 🌍 External GeoGuessr Resolver (Steam + Browser + Desktop Overlay + Android Flutter App + Web Dashboard)
 
-A complete system that allows you to **play GeoGuessr on your PC** (either the **Steam Edition** or in a **Web Browser**) while viewing the exact location of the current round in real time on your **Android phone inside a standalone Flutter app** (or in the upgraded **Next.js Web Dashboard**).
+A complete system that allows you to **play GeoGuessr on your PC** (either the **Steam Edition** or in a **Web Browser**) while viewing the exact location of the current round in real time — on your **Android phone** (standalone Flutter app), in the **Next.js Web Dashboard**, or directly on your screen in the **transparent always-on-top desktop overlay** (works with just one monitor, no tab switching).
 
-Nothing is displayed on your PC screen during gameplay, keeping your monitor and Discord screen shares completely clean.
+With the phone app or the dashboard, nothing is displayed on your PC screen during gameplay, keeping your monitor and Discord screen shares completely clean. (The optional desktop overlay is only for your own screen.)
 
 ---
 
@@ -33,12 +33,49 @@ Both the **Flutter Android App (`flutter_app/`)** and the **Web Dashboard (`fron
 
 | Folder / File | Description |
 | :--- | :--- |
+| **[`overlay/`](overlay/)** | **🆕 Always-On-Top Desktop Overlay** — transparent Electron window that floats above GeoGuessr (Steam **and** browser) showing country / city / road / live map, so you need **no second monitor and never switch tabs**. |
 | **[`flutter_app/`](flutter_app/)** | **Android Flutter Application** — standalone native mobile app with an interactive map (`flutter_map`), quick-zoom presets, layer switcher, fullscreen mode, and reverse-geocoded details. |
 | **[`Steam_Resolver/`](Steam_Resolver/)** | **GeoGuessr Steam Edition Resolver** — intercepts Street View coordinates directly from the Steam desktop game on Windows and streams them to the Android app / Web Dashboard. |
 | **[`Extension/Extension.js`](Extension/Extension.js)** | **Tampermonkey Userscript (Browser Version)** — hooks into Google Maps requests on `geoguessr.com` in Chrome, Edge, Brave, Opera, or Firefox. |
 | **[`frontend/`](frontend/)** | **Next.js Web Dashboard** — web version featuring the same interactive Leaflet map, quick-zoom presets, map layers, fullscreen mode, and live location details. |
 | **[`Server/server.py`](Server/server.py)** | **FastAPI WebSocket Server** — optional self-hosted server if you want everything to run over your local Wi-Fi network without relying on an external server. |
 | **[`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml)** | **GitHub Actions Workflow** — automatically compiles the Flutter app into a ready-to-install Android `.apk` artifact on GitHub. |
+
+---
+
+## 🖥️ PART 0 (Recommended): Desktop Overlay — no second monitor, no tab switching
+
+If you don't have a second monitor, the easiest way to play is the **always-on-top overlay**: a small
+transparent window that floats above GeoGuessr and shows the country, city, road and a live map of
+the current round. It works with **both** the Steam Edition and the browser version.
+
+### Step 1: Install once
+1. Make sure **Node.js 18+** is installed ([nodejs.org](https://nodejs.org/)).
+2. Open the [`overlay/`](overlay/) folder and double-click **`1_INSTALL_FIRST_TIME.bat`** (downloads Electron).
+
+### Step 2: Start it
+Double-click **`overlay/2_START_OVERLAY.bat`**. A small panel appears in the top-right corner of your
+screen, on top of everything — including fullscreen GeoGuessr.
+
+### Step 3: Keep rounds flowing
+The overlay shows whatever the server receives, so you still need **one** resolver sending rounds:
+* **Steam Edition** → run [`Steam_Resolver/2_START_STEAM_RESOLVER.bat`](Steam_Resolver/2_START_STEAM_RESOLVER.bat) (PART 2), or
+* **Browser** → install the [Tampermonkey userscript](Extension/Extension.js) (PART 3).
+
+Both use the default User ID that's already pre-filled in the overlay — no configuration needed.
+
+### Useful hotkeys
+| Hotkey | Action |
+| :--- | :--- |
+| `Ctrl`+`Alt`+`O` | Show / hide the overlay |
+| `Ctrl`+`Alt`+`C` | Compact view (tiny `🇷🇸 SERBIA │ Belgrade` chip) |
+| `Ctrl`+`Alt`+`D` | Click-through mode (overlay ignores mouse clicks) |
+| `Ctrl`+`Alt`+`S` | Settings (size, opacity, position, server, map layer) |
+
+You can also drag the overlay anywhere by its header. Full details are in [`overlay/README.md`](overlay/README.md).
+
+> **Note:** This overlay is for your **own screen** while playing. It is **not** an OBS source and does
+> **not** show up in streams or screen shares.
 
 ---
 
