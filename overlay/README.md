@@ -41,6 +41,13 @@ Double-click **`2_START_OVERLAY.bat`**.
 
 A small panel appears in the top-right corner of your screen, floating above everything.
 
+> The launcher runs `npm start` (i.e. `electron .`), so Node resolves Electron's own install
+> location for you. If you ever need to start it manually:
+> ```bash
+> cd overlay
+> npm start
+> ```
+
 ### Step 3 — Make sure rounds are being sent
 The overlay displays whatever the GeoResolver server receives, so you also need **one** of:
 
@@ -116,4 +123,4 @@ node test/e2e.test.js                # in another
 | Overlay is behind the game | Press `Ctrl`+`Alt`+`O` to re-show it; the window is set to stay on top of fullscreen games. |
 | Map is blank / grey tiles | Map tiles come from the internet. If blocked, the text (country/city/road) still works. |
 | Hotkeys do nothing | Another app may have claimed the combo. Close the overlay (tray → Quit) and start it again to re-register. |
-| `1_INSTALL_FIRST_TIME.bat` cannot download Electron | Allow `github.com` in your firewall/proxy and retry, or set `ELECTRON_MIRROR`. |
+| `1_INSTALL_FIRST_TIME.bat` cannot download Electron | That step pulls ~100 MB from GitHub releases. Check your connection, and if you are behind a firewall/proxy allow `github.com`, then run the `.bat` again — it repairs and retries automatically. |

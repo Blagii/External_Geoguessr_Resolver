@@ -1,8 +1,8 @@
 @echo off
 REM ==========================================================
 REM  GeoGuessr Overlay - FIRST TIME SETUP
-REM  Downloads the Electron runtime (once). Run this the first
-REM  time only, before 2_START_OVERLAY.bat
+REM  Installs dependencies and the Electron runtime.
+REM  Run this once, before 2_START_OVERLAY.bat
 REM ==========================================================
 echo ==========================================================
 echo   GeoGuessr Overlay - First Time Setup
@@ -23,24 +23,25 @@ if errorlevel 1 (
 
 echo [1/2] Installing dependencies. This can take a couple of minutes...
 call npm install
-if errorlevel 1 (
-  echo.
-  echo [X] Installation failed. Check your internet connection and retry.
-  echo.
-  pause
-  exit /b 1
-)
 
 echo.
-echo [2/2] Checking the Electron runtime...
-if not exist "node_modules\electron\dist\electron.exe" (
-  echo     Electron binary missing - running its download script...
-  call node node_modules\electron\install.js
+echo [2/2] Verifying the Electron runtime...
+REM npm install can exit 0 even when the Electron binary download fails,
+REM so the real check is whether Electron can resolve its own path.
+call node -e "require('electron')" >nul 2>&1
+if errorlevel 1 (
+  echo     Electron runtime not found - repairing...
+  echo.
+  if exist "node_modules\electron" rmdir /s /q "node_modules\electron"
+  call npm install electron --save-dev
+  call node -e "require('electron')" >nul 2>&1
   if errorlevel 1 (
     echo.
     echo [X] Could not download the Electron runtime.
-    echo     If you are behind a firewall or proxy, allow
-    echo     github.com/releases and retry.
+    echo     This step downloads ~100 MB from GitHub releases.
+    echo     - Check your internet connection
+    echo     - If you use a firewall/proxy, allow github.com
+    echo     - Corporate networks sometimes block it; try again later
     echo.
     pause
     exit /b 1
