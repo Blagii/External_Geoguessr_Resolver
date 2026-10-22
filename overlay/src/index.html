@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Leaflet is vendored locally (vendor/leaflet) so the map works
+         offline and cannot be broken by a CDN outage. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss: https:; script-src 'self'"
+    />
+    <title>GeoGuessr Overlay</title>
+    <link rel="stylesheet" href="../vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!--
+      Drag region: the whole overlay can be repositioned by dragging on the header.
+      Everything inside .no-drag stays clickable (buttons).
+    -->
+    <div id="root" class="overlay">
+      <!-- ── Top: Location banner ─────────────────────────────── -->
+      <header class="banner" id="banner">
+        <div class="banner-left">
+          <span class="flag" id="flag">🌍</span>
+          <div class="banner-text">
+            <div class="country" id="country">Waiting for round…</div>
+            <div class="subline" id="subline"></div>
+          </div>
+        </div>
+
+        <div class="banner-right no-drag">
+          <span class="round-badge" id="roundBadge" title="Round number">
+            —
+          </span>
+          <button id="btnCopy" class="icon-btn" title="Copy coordinates">
+            <span id="copyIcon">⧉</span>
+          </button>
+          <button id="btnCompact" class="icon-btn" title="Compact view (C)">
+            <span>▾</span>
+          </button>
+          <button id="btnSettings" class="icon-btn" title="Settings (S)">
+            <span>⚙</span>
+          </button>
+          <button id="btnClose" class="icon-btn danger" title="Hide overlay (H)">
+            <span>✕</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ── Middle: Map ──────────────────────────────────────── -->
+      <section class="map-wrap" id="mapWrap">
+        <div id="map" class="map"></div>
+        <div class="map-controls no-drag">
+          <button id="btnCenter" class="map-btn" title="Center on pin">
+            ◎
+          </button>
+          <button id="btnZoomIn" class="map-btn" title="Zoom in">+</button>
+          <button id="btnZoomOut" class="map-btn" title="Zoom out">−</button>
+        </div>
+        <div class="zoom-presets no-drag" id="zoomPresets">
+          <button data-zoom="6" title="Country level">🌍 6</button>
+          <button data-zoom="11" title="Region level">🏙️ 11</button>
+          <button data-zoom="16" title="Street level">🎯 16</button>
+          <button data-zoom="19" title="Max detail">🔍 19</button>
+        </div>
+      </section>
+
+      <!-- ── Bottom: Details strip ────────────────────────────── -->
+      <footer class="details" id="details">
+        <div class="detail"><span class="d-label">City</span><span class="d-value" id="dCity">—</span></div>
+        <div class="detail"><span class="d-label">State</span><span class="d-value" id="dState">—</span></div>
+        <div class="detail"><span class="d-label">Road</span><span class="d-value" id="dRoad">—</span></div>
+        <div class="detail"><span class="d-label">Coords</span><span class="d-value mono" id="dCoords">—</span></div>
+      </footer>
+
+      <!-- ── Compact mode: tiny text-only chip ────────────────── -->
+      <div class="compact" id="compact">
+        <span class="c-country" id="cCountry">—</span>
+        <span class="c-city" id="cCity">—</span>
+      </div>
+
+      <!-- ── Settings drawer ──────────────────────────────────── -->
+      <div class="settings" id="settings" hidden>
+        <div class="settings-head">
+          <strong>Overlay Settings</strong>
+          <button id="btnSettingsClose" class="icon-btn danger"><span>✕</span></button>
+        </div>
+
+        <label class="field">
+          <span>User ID Token</span>
+          <input id="inpToken" type="text" spellcheck="false" />
+        </label>
+
+        <label class="field">
+          <span>Server</span>
+          <input id="inpServer" type="text" spellcheck="false" />
+          <small>
+            Use your local server (e.g. <code>192.168.1.15:8000</code>) or leave the
+            default public one.
+          </small>
+        </label>
+
+        <label class="field">
+          <span>Overlay position</span>
+          <select id="selPosition">
+            <option value="top-left">Top left</option>
+            <option value="top-right">Top right</option>
+            <option value="bottom-left">Bottom left</option>
+            <option value="bottom-right">Bottom right</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Opacity <em id="opacityVal">92%</em></span>
+          <input id="inpOpacity" type="range" min="40" max="100" step="1" />
+        </label>
+
+        <label class="field">
+          <span>Size <em id="sizeVal">100%</em></span>
+          <input id="inpSize" type="range" min="60" max="160" step="5" />
+        </label>
+
+        <label class="field">
+          <span>Map layer</span>
+          <select id="selStyle">
+            <option value="0">Clean HD</option>
+            <option value="1">Streets (OSM)</option>
+            <option value="2">Satellite</option>
+            <option value="3">Dark</option>
+          </select>
+        </label>
+
+        <div class="settings-actions">
+          <button id="btnSave" class="primary">Save &amp; Reconnect</button>
+          <span class="status" id="connStatus">Disconnected</span>
+        </div>
+
+        <div class="hotkeys">
+          <strong>Hotkeys</strong>
+          <ul>
+            <li><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd> show / hide overlay</li>
+            <li><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd> toggle compact view</li>
+            <li><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd> settings</li>
+            <li><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd> click-through mode</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Overlay Preview — mock data</title>
+<link rel="stylesheet" href="../src/styles.css" />
+<style>
+  /* Preview harness: fake a desktop so the panel can be seen in a browser. */
+  body {
+    background:
+      radial-gradient(900px 600px at 20% 15%, #1d2a17, transparent 60%),
+      linear-gradient(160deg, #101214, #060708);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  .hint {
+    position: fixed;
+    top: 14px; left: 16px;
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <p class="hint">Static preview — mock location data</p>
+
+  <div class="overlay" style="--scale:1.05; --opacity:0.95">
+    <header class="banner">
+      <div class="banner-left">
+        <span class="flag">🇷🇸</span>
+        <div class="banner-text">
+          <div class="country">Serbia</div>
+          <div class="subline">Belgrade • Belgrade • Kralja Milana</div>
+        </div>
+      </div>
+      <div class="banner-right no-drag">
+        <span class="round-badge">R4</span>
+        <button class="icon-btn"><span>⧉</span></button>
+        <button class="icon-btn"><span>▾</span></button>
+        <button class="icon-btn"><span>⚙</span></button>
+        <button class="icon-btn danger"><span>✕</span></button>
+      </div>
+    </header>
+
+    <section class="map-wrap">
+      <!-- Stand-in for the live Leaflet canvas. -->
+      <div style="position:absolute;inset:0;
+                  background:
+                    repeating-linear-gradient(0deg,#1b1f16 0 22px,#171a13 22px 44px),
+                    repeating-linear-gradient(90deg,#1b1f16 0 22px,#171a13 22px 44px);"></div>
+      <div style="position:absolute;inset:0;background:
+                  radial-gradient(circle at 46% 52%, rgba(86,255,10,.10), transparent 60%);"></div>
+
+      <div style="position:absolute;left:46%;top:52%;transform:translate(-50%,-100%);"
+           class="gp-pin">
+        <div class="gp-pin-label">Belgrade, Serbia</div>
+        <div class="gp-ring"><div class="gp-dot"></div></div>
+      </div>
+
+      <div class="map-controls no-drag">
+        <button class="map-btn">◎</button>
+        <button class="map-btn">+</button>
+        <button class="map-btn">−</button>
+      </div>
+      <div class="zoom-presets no-drag">
+        <button>🌍 6</button><button>🏙️ 11</button>
+        <button>🎯 16</button><button>🔍 19</button>
+      </div>
+    </section>
+
+    <footer class="details">
+      <div class="detail"><span class="d-label">City</span><span class="d-value">Belgrade</span></div>
+      <div class="detail"><span class="d-label">State</span><span class="d-value">Belgrade</span></div>
+      <div class="detail"><span class="d-label">Road</span><span class="d-value">Kralja Milana</span></div>
+      <div class="detail"><span class="d-label">Coords</span><span class="d-value mono">44.8167, 20.4661</span></div>
+    </footer>
+  </div>
+
+  <!-- Compact mode variant, shown side by side. -->
+  <div style="position:fixed;bottom:26px;left:26px">
+    <div class="overlay" style="--scale:1.05">
+      <div class="compact" style="display:flex">
+        <span class="c-country">Serbia</span>
+        <span class="c-city">Belgrade</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

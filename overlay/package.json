@@ -1,0 +1,22 @@
+{
+  "name": "geoguessr-overlay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Transparent always-on-top overlay that shows the exact GeoGuessr round location above the game.",
+  "main": "src/main.js",
+  "author": "0x978",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0"
+  },
+  "dependencies": {
+    "leaflet": "1.9.4"
+  },
+  "allowScripts": {
+    "electron": true
+  }
+}
