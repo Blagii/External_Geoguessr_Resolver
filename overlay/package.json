@@ -15,5 +15,8 @@
   },
   "dependencies": {
     "leaflet": "1.9.4"
+  },
+  "allowScripts": {
+    "electron": true
   }
 }

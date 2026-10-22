@@ -21,37 +21,17 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [1/2] Installing dependencies. This can take a couple of minutes...
-call npm install
+REM setup.js installs deps and, if needed, runs Electron's own
+REM installer directly so it works even when npm blocks postinstall
+REM scripts (npm 12+ does this by default).
+node setup.js
+set SETUP_RESULT=%errorlevel%
 
 echo.
-echo [2/2] Verifying the Electron runtime...
-REM npm install can exit 0 even when the Electron binary download fails,
-REM so the real check is whether Electron can resolve its own path.
-call node -e "require('electron')" >nul 2>&1
-if errorlevel 1 (
-  echo     Electron runtime not found - repairing...
-  echo.
-  if exist "node_modules\electron" rmdir /s /q "node_modules\electron"
-  call npm install electron --save-dev
-  call node -e "require('electron')" >nul 2>&1
-  if errorlevel 1 (
-    echo.
-    echo [X] Could not download the Electron runtime.
-    echo     This step downloads ~100 MB from GitHub releases.
-    echo     - Check your internet connection
-    echo     - If you use a firewall/proxy, allow github.com
-    echo     - Corporate networks sometimes block it; try again later
-    echo.
-    pause
-    exit /b 1
-  )
+if not "%SETUP_RESULT%"=="0" (
+  pause
+  exit /b %SETUP_RESULT%
 )
 
-echo.
-echo ==========================================================
-echo   Setup complete!
-echo   Now run  2_START_OVERLAY.bat  to play
-echo ==========================================================
-echo.
-pause
+echo Press any key to close this window...
+pause >nul
