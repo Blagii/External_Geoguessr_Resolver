@@ -27,6 +27,10 @@ the same GeoResolver server as the Android app and the web dashboard.
 | **Always on top** | Stays above the game even when GeoGuessr is fullscreen. |
 | **Auto-reconnect** | Reconnects automatically if the server or network drops. |
 
+The map engine (**Leaflet 1.9.4**) is bundled in [`vendor/leaflet/`](vendor/leaflet/) rather than
+loaded from a CDN, so the map keeps working offline and cannot break if a CDN is unreachable. Only
+the map **tiles** require an internet connection.
+
 ---
 
 ## 📦 Installation (Windows)
@@ -92,10 +96,13 @@ There is also a **tray icon** (green dot in the system tray) with quick toggles 
 ## 🐍 Running the tests
 
 ```bash
-npm install --ignore-scripts   # deps only (Electron binary not needed for tests)
+npm install                  # deps (Electron + Leaflet)
 
 # Unit tests — URL parsing, flag emoji, round detection, DOM wiring
 node test/renderer.test.js
+
+# Map tests — Leaflet loads locally and builds a real map (needs jsdom)
+npm install --no-save jsdom && node test/map.test.js
 
 # End-to-end tests — needs Server/server.py listening on :8000
 cd ../Server && python server.py     # in one terminal
@@ -121,6 +128,6 @@ node test/e2e.test.js                # in another
 | Overlay shows "Connecting…" forever | The resolver isn't sending rounds yet. Start the Steam Resolver or the browser userscript. |
 | Overlay shows "Disconnected" | Wrong server address, or no internet. Check the server in Settings. |
 | Overlay is behind the game | Press `Ctrl`+`Alt`+`O` to re-show it; the window is set to stay on top of fullscreen games. |
-| Map is blank / grey tiles | Map tiles come from the internet. If blocked, the text (country/city/road) still works. |
+| Map is blank / grey tiles | The map engine is bundled locally, so a blank grey box means it failed to load — re-run `1_INSTALL_FIRST_TIME.bat`. Map **tiles** come from the internet, so if the engine works but tiles are missing, your network/DNS is blocking the tile hosts; the text (country/city/road) still works. |
 | Hotkeys do nothing | Another app may have claimed the combo. Close the overlay (tray → Quit) and start it again to re-register. |
 | `1_INSTALL_FIRST_TIME.bat` cannot download Electron | That step pulls ~100 MB from GitHub releases. Check your connection, and if you are behind a firewall/proxy allow `github.com`, then run the `.bat` again — it repairs and retries automatically. |

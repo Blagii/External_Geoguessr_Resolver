@@ -245,6 +245,7 @@ const MAP_STYLES = [
   "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
 ]
 
+/** Load the vendored Leaflet (no CDN → works offline, no CSP surprises). */
 function loadLeaflet() {
   if (window.L) {
     leafletReady = true
@@ -252,26 +253,34 @@ function loadLeaflet() {
     return
   }
 
-  if (!document.getElementById("leaflet-css")) {
-    const link = document.createElement("link")
-    link.id = "leaflet-css"
-    link.rel = "stylesheet"
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    document.head.appendChild(link)
+  const existing = document.getElementById("leaflet-js")
+  if (existing) {
+    existing.addEventListener("load", () => {
+      leafletReady = true
+      initMap()
+    })
+    return
   }
 
   const script = document.createElement("script")
   script.id = "leaflet-js"
-  script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  // Relative to this file (src/) → ../vendor/leaflet/leaflet.js
+  script.src = "../vendor/leaflet/leaflet.js"
   script.onload = () => {
     leafletReady = true
     initMap()
   }
-  script.onerror = () => {
-    // Map unavailable — the text overlay still works.
-    document.getElementById("mapWrap").style.display = "none"
-  }
+  script.onerror = () => showMapError()
   document.head.appendChild(script)
+}
+
+/** If the map engine fails, say so instead of showing an empty grey box. */
+function showMapError() {
+  leafletReady = false
+  const wrap = document.getElementById("mapWrap")
+  if (!wrap) return
+  wrap.innerHTML =
+    '<div class="map-error">Map unavailable<br><span>run <b>1_INSTALL_FIRST_TIME.bat</b></span></div>'
 }
 
 function bullseyeIcon(labelText) {

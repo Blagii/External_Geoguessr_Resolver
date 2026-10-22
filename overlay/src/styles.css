@@ -332,6 +332,41 @@ input {
   color: var(--accent);
 }
 
+/* Shown when the map engine can't load, so the panel never
+   looks like a mysterious empty grey rectangle. */
+.map-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ff8a80;
+  background: repeating-linear-gradient(
+    45deg,
+    #1a1518,
+    #1a1518 10px,
+    #1f181c 10px,
+    #1f181c 20px
+  );
+}
+
+.map-error span {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.map-error b {
+  color: var(--accent);
+}
+
 /* ── Compact mode ─────────────────────────────────────────────── */
 
 .compact {

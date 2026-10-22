@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Leaflet is vendored locally (vendor/leaflet) so the map works
+         offline and cannot be broken by a CDN outage. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss: https:"
+      content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss: https:; script-src 'self'"
     />
     <title>GeoGuessr Overlay</title>
+    <link rel="stylesheet" href="../vendor/leaflet/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
